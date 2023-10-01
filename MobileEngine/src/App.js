@@ -1,10 +1,10 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import HomePage from './components/HomePage';
 import ContinuumModules from './lib/ContinuumModules';
-import { AppRegistry } from 'react-native';
+import { AppRegistry, Platform } from 'react-native';
 
 export default class App extends React.Component {
-  jsxServerURL = "http://localhost:3000/applets/app1/index.bundle?platform=ios&dev=true&minify=false&modulesOnly=false&runModule=true&app=org.reactjs.native.example.Continuum";
+  jsxServerURL = "http://localhost:9091/applets/app1/index.bundle?platform=ios&dev=true&minify=false&modulesOnly=false&runModule=true&app=org.reactjs.native.example.Continuum";
 
   constructor(props) {
     super(props);
@@ -12,6 +12,9 @@ export default class App extends React.Component {
     this.state = {
       jsx: "",
       refreshing:false
+    }
+    if(Platform.OS === 'android') {
+      this.jsxServerURL = this.jsxServerURL.replace("localhost", "10.0.2.2");
     }
   }
 
@@ -27,7 +30,7 @@ export default class App extends React.Component {
     }).then((resp)=>{
       return resp.text()
     }).then((text)=>{
-      //console.log(text);
+      console.log(text);
       this.setState({
         jsx:text
       });
@@ -59,4 +62,3 @@ export default class App extends React.Component {
     return <HomePage onRefresh={this.onRefresh}/>;
   }
 }
-

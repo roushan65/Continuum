@@ -3,6 +3,7 @@ const modules = {
     'react-native': require('react-native'),
     '@react-navigation/native': require('@react-navigation/native'),
     '@react-navigation/native-stack': require('@react-navigation/native-stack'),
+    'react/jsx-runtime': require('react/jsx-runtime')
     // 'expo-app-loading': require('expo-app-loading'),
     // '@use-expo/font': require('@use-expo/font'),
     // 'expo-asset': require('expo-asset'),

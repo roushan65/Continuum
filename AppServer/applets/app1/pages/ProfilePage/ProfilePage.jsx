@@ -1,7 +1,7 @@
 const React = require('react')
 const {View, Text, Button} = require('react-native')
 
-export default class ProfilePage extends React.Component {
+module.exports = class ProfilePage extends React.Component {
     constructor(props) {
       super(props);
     }

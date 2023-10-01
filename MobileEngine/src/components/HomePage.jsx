@@ -9,7 +9,7 @@ export default class HomePage extends React.Component {
     this.properties = props
     console.log('props: ', props);
     this.state = {
-      message: 'Loading Movelet from remote...',
+      message: 'Pull down to load Applet!',
       refreshing: false
     };
   }

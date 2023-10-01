@@ -1,7 +1,7 @@
 const React = require("react");
-const {View, Text, Button} = require("react-native");
+const {View, Text, Button, StyleSheet} = require("react-native");
 
-export default class HomePage extends React.Component {
+module.exports = class HomePage extends React.Component {
 
   constructor(props) {
     super(props);
@@ -26,4 +26,5 @@ export default class HomePage extends React.Component {
       </View>
     );
   };
+  
 }

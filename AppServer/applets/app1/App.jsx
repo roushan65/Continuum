@@ -1,5 +1,6 @@
-import HomePage from './pages/HomePage/HomePage'
-import ProfilePage from './pages/ProfilePage/ProfilePage'
+import HomePage from './pages/HomePage/HomePage';
+// const HomePage = require('./pages/HomePage/HomePage')
+const ProfilePage = require('./pages/ProfilePage/ProfilePage')
 
 const React = require('react')
 const {StyleSheet} = require('react-native')
@@ -8,7 +9,7 @@ const {createNativeStackNavigator} = require('@react-navigation/native-stack')
 
 const Stack = createNativeStackNavigator();
 
-export default class App extends React.Component {
+module.exports = class App extends React.Component {
 
   constructor(props) {
     super(props);
