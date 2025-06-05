@@ -6,7 +6,8 @@ export default class ContinuumUIExtensionService {
             private name: String,
             private data: any,
             private dataSchema: JsonSchema,
-            private uiSchema: any
+            private uiSchema: any,
+            private onDataChange: ({errors, data}: {errors:Array<any>, data:any}) => void = () => {}
     ) {
     }
 
@@ -57,6 +58,10 @@ export default class ContinuumUIExtensionService {
 
     publishData(data: any) {
         console.log("publishData called with", data);
+        this.onDataChange({
+            errors: [],
+            data: data.data
+        });
     }
 
     sendAlert(alert) {
