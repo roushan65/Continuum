@@ -1,0 +1,3 @@
+[submodule "continuum-frontend/submodules/knime-core-ui"]
+	path = continuum-frontend/submodules/knime-core-ui
+	url = https://github.com/knime/knime-core-ui.git
