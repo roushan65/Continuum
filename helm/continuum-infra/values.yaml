@@ -1,0 +1,8 @@
+namespace: continuum-dev
+images:
+  kafka:
+    image: confluentinc/cp-kafka
+    tag: latest
+app_settings:
+  kafka:
+    enabled: true

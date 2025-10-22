@@ -12,6 +12,9 @@ RUN apt-get update && \
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs
 
+# Install minikube
+RUN curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && sudo install minikube-linux-amd64 /usr/local/bin/minikube && rm minikube-linux-amd64
+
 # Set the default shell to bash
 SHELL ["/bin/bash", "-c"]
 
