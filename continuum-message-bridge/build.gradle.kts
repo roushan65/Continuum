@@ -77,10 +77,13 @@ jib {
         image = "eclipse-temurin:21.0.8_9-jre"
     }
     to {
-        image = "elilillyco-continuum-docker-lc.jfrog.io/${project.name}:${project.version}"
+        val githubOwner = System.getenv("GITHUB_OWNER")
+            ?: System.getenv("GITHUB_REPOSITORY")?.split("/")?.getOrNull(0)
+            ?: "OWNER"
+        image = "ghcr.io/${githubOwner}/${project.name}:${project.version}"
         auth {
-            username = System.getenv("MAVEN_REPO_USR")
-            password = System.getenv("MAVEN_REPO_PSW")
+            username = System.getenv("GITHUB_ACTOR") ?: System.getenv("MAVEN_REPO_USR")
+            password = System.getenv("GITHUB_TOKEN") ?: System.getenv("MAVEN_REPO_PSW")
         }
     }
 }
@@ -101,12 +104,15 @@ publishing {
     }
     repositories {
         maven {
-            name = "continuum"
-            url = uri("https://elilillyco.jfrog.io/elilillyco/continuum-maven-lc")
-            // url = uri("https://elilillyco.jfrog.io/elilillyco/lrl-jarvis-maven-lc")
+            name = "github"
+            val repo = System.getenv("GITHUB_REPOSITORY") ?: "OWNER/REPO"
+            val parts = repo.split("/")
+            val owner = parts.getOrElse(0) { "OWNER" }
+            val repository = parts.getOrElse(1) { project.name }
+            url = uri("https://maven.pkg.github.com/${owner}/${repository}")
             credentials {
-                username = System.getenv("MAVEN_REPO_USR")
-                password = System.getenv("MAVEN_REPO_PSW")
+                username = System.getenv("GITHUB_ACTOR") ?: System.getenv("MAVEN_REPO_USR")
+                password = System.getenv("GITHUB_TOKEN") ?: System.getenv("MAVEN_REPO_PSW")
             }
         }
     }

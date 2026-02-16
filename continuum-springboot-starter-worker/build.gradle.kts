@@ -100,11 +100,15 @@ publishing {
     }
     repositories {
         maven {
-            name = "continuum"
-            url = uri("https://elilillyco.jfrog.io/elilillyco/continuum-maven-lc")
+            name = "github"
+            val repo = System.getenv("GITHUB_REPOSITORY") ?: "OWNER/REPO"
+            val parts = repo.split("/")
+            val owner = parts.getOrElse(0) { "OWNER" }
+            val repository = parts.getOrElse(1) { project.name }
+            url = uri("https://maven.pkg.github.com/${owner}/${repository}")
             credentials {
-                username = System.getenv("MAVEN_REPO_USR")
-                password = System.getenv("MAVEN_REPO_PSW")
+                username = System.getenv("GITHUB_ACTOR") ?: System.getenv("MAVEN_REPO_USR")
+                password = System.getenv("GITHUB_TOKEN") ?: System.getenv("MAVEN_REPO_PSW")
             }
         }
     }

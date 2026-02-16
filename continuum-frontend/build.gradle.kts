@@ -34,8 +34,9 @@ tasks.named("build") {
 // Register task for docker build
 tasks.register<Exec>("jib") {
     commandLine("bash", "-c",
-        "docker build -t elilillyco-continuum-docker-lc.jfrog.io/continuum-workbench:$version . --progress=plain && " +
-        "docker login elilillyco-continuum-docker-lc.jfrog.io --username ${System.getenv("MAVEN_REPO_USR")} --password ${System.getenv("MAVEN_REPO_PSW")} && " +
-        "docker push elilillyco-continuum-docker-lc.jfrog.io/continuum-workbench:$version"
+        // Build and push to GitHub Container Registry. Configure GITHUB_OWNER/GITHUB_ACTOR/GITHUB_TOKEN
+        "docker build -t ghcr.io/${System.getenv("GITHUB_OWNER") ?: System.getenv("GITHUB_REPOSITORY")?.split('/')?.getOrNull(0) ?: 'OWNER'}/continuum-workbench:$version . --progress=plain && " +
+        "echo ${'$'}{System.getenv("GITHUB_TOKEN") ?: System.getenv("MAVEN_REPO_PSW")} | docker login ghcr.io -u ${'$'}{System.getenv("GITHUB_ACTOR") ?: System.getenv("MAVEN_REPO_USR")} --password-stdin && " +
+        "docker push ghcr.io/${System.getenv("GITHUB_OWNER") ?: System.getenv("GITHUB_REPOSITORY")?.split('/')?.getOrNull(0) ?: 'OWNER'}/continuum-workbench:$version"
     )
 }
