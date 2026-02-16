@@ -1,52 +1,71 @@
 # Continuum
 
-**Visual workflows that actually run.**
+> Inspired by KNIME — but made for the web, and built to survive.  
+> No desktop. No install. Just resilient workflows, in your browser.
 
-Start with a tiny input — a webhook, a form submission, a scheduled trigger.  
-Pass it through one node. Then another. Then another.  
+**Visual workflows that actually run — and survive.**
 
-Each step is small.  
-A little transformation.  
-A filter, a branch, an enrichment, a loop.  
+Start with a drop.  
+One node. Two.  
+Transform. Branch. Loop.  
 
-Nothing dramatic happens at any single node.  
+Each step tiny.  
+But at the end — it’s a river.  
+A request turned system.  
+A click turned outcome.
 
-But when you zoom out and look from beginning to end…  
-the data has completely changed shape.  
-A single event became a full report.  
-A customer request became an orchestrated multi-system action.  
-A spark became a living, breathing business process.
+That’s Continuum.
 
-That’s **Continuum** — continuous, seamless transformation.
+## Why?
 
-## Why Continuum?
+Most tools look good.  
+Then break.  
+We want graphs that keep running —  
+even if Kafka dies, even if S3 lags, even if your code crashes.
 
-Most workflow builders give you pretty diagrams that eventually break when things get real.  
-Continuum is different:
+## How
 
-- **Visual first** — built with React Flow + Eclipse Theia for a real IDE-like experience  
-- **Durable execution** — powered by Temporal (fault-tolerant, long-running, scalable)  
-- **Developer + non-dev friendly** — drag-drop canvas + strong typing & schema enforcement via Kotlin + Spring Boot  
-- **Extensible** — add your own activities (Java/Kotlin or even JS plugins in the future)  
-- **Open & safe** — Apache 2.0 licensed, patent grant included
+- **Canvas:** Eclipse Theia + React Flow — drag, drop, real IDE feel  
+- **Engine:** Temporal — durable execution, auto-retry, infinite scale  
+- **Events:** Kafka → MQTT over WebSockets — live step-by-step updates  
+- **Data:** Parquet tables between nodes — fast, columnar, query-ready  
+- **Storage:** AWS S3 (or MinIO for local) — open, no lock-in  
+- **Backend:** Kotlin + Spring Boot — typed, clean, contract-safe  
+- **Resilience:** Temporal owns it. Fails? Retries. Forever.  
+- **Flow Control:** Output `null` on a port = flow stops. Simple guard. Real loops coming.
 
-## Current Status
+## What’s Missing (and what we want)
 
-- Still early (alpha / proof-of-concept stage)  
-- Core drag-and-drop editor works  
-- Temporal backend executes simple → parallel → join flows  
-- Basic loop support is in progress  
-- Node discovery & schema rendering via JSON Forms is functional  
+- No real loops — but null = break. Works for now.  
+- No visual debugger — logs only. Want timeline replay.  
+- No plugin store — but soon: Slack, Stripe, DB, AI.  
+- No multi-tenancy — one user at a time.  
+- No RBAC — anyone edits.  
+- **Multi-worker support** — currently one worker.  
+  Goal: each plugin runs its *own* worker with its own nodes.  
+  All register to a shared Redis registry.  
+  Frontend discovers them dynamically.  
+  No bundling. No central choke.
 
-It's rough. It's incomplete.  
-But it already runs real workflows end-to-end.
+Heading for:  
+- True while/for loops with condition builder  
+- Live simulation (dry-run mode) — test without firing Kafka/S3  
+- Import from KNIME, n8n, Zapier  
+- Zero-config self-host with Docker  
 
-## Come play
+If you see the gap — fill it.  
+We don’t want perfect.  
+We want working.
 
-If you hate n8n at scale, if Temporal feels too code-heavy, if you want visual workflows that don't lie to you —  
-fork it, break it, fix it, add nodes, yell at me.
+## Contribute
 
-No gatekeeping. No judgment.
+See CONTRIBUTING.md
 
-Welcome to the river.  
-Let's make it flow.
+## License
+
+Apache 2.0 — open, safe, patent-protected.
+
+Welcome.  
+Break it.  
+Fix it.  
+Flow with us.
