@@ -17,7 +17,7 @@ on:
           - continuum-knime-base
           - continuum-message-bridge
           - continuum-worker
-          - workers/continuum-base-worker
+          - workers:continuum-base-worker
 
 jobs:
   build-module:
