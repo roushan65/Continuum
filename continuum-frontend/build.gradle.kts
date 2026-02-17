@@ -33,10 +33,14 @@ tasks.register<YarnTask>("run") {
 }
 
 tasks.register("publish") {
+  description = "Publish the built application to JFrog Artifactory"
+  group = "Publishing tasks"
   // don't publish yet
 }
 
 tasks.register<Exec>("jib") {
+  description = "Docker build and push to JFrog Artifactory"
+  group = "Jib tasks"
   commandLine("bash", "-c",
     "docker build -t elilillyco-continuum-docker-lc.jfrog.io/continuum-workbench:$version . --progress=plain && " +
         "docker login elilillyco-continuum-docker-lc.jfrog.io --username ${System.getenv("MAVEN_REPO_USERNAME")} --password ${System.getenv("MAVEN_REPO_PASSWORD")} && " +
