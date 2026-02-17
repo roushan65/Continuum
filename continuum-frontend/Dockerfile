@@ -1,5 +1,5 @@
 FROM node:22-alpine AS builder
-RUN apk add --no-cache git python3 make g++
+RUN apk add --no-cache git python3 py3-distutils make g++
 WORKDIR /app
 ADD . .
 RUN yarn install
