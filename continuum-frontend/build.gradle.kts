@@ -43,7 +43,7 @@ tasks.register<Exec>("jib") {
   group = "Jib tasks"
   commandLine("bash", "-c",
     "docker build -t elilillyco-continuum-docker-lc.jfrog.io/continuum-workbench:$version . --progress=plain && " +
-        "docker login elilillyco-continuum-docker-lc.jfrog.io --username ${System.getenv("MAVEN_REPO_USERNAME")} --password ${System.getenv("MAVEN_REPO_PASSWORD")} && " +
+        "docker login elilillyco-continuum-docker-lc.jfrog.io --username ${System.getenv("DOCKER_REPO_USERNAME")} --password ${System.getenv("DOCKER_REPO_PASSWORD")} && " +
         "docker push elilillyco-continuum-docker-lc.jfrog.io/continuum-workbench:$version"
   )
 }
