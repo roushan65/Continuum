@@ -51,3 +51,5 @@ jobs:
         env:
           MAVEN_REPO_USERNAME: ${{ github.actor }}
           MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_REPO_USERNAME: ${{ github.actor }}
+          DOCKER_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
