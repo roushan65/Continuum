@@ -24,3 +24,5 @@ jobs:
     uses: ./.github/workflows/generic-module-builder.yml
     with:
       module-name: ${{ github.event.inputs.module }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

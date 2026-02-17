@@ -3,6 +3,7 @@ plugins {
     kotlin("plugin.spring") version "1.9.25"
     id("io.spring.dependency-management") version "1.1.6"
     `maven-publish`
+    id("com.google.cloud.tools.jib") version "3.4.1"
 }
 
 group = "com.continuum.base"
@@ -110,5 +111,18 @@ publishing {
                 password = System.getenv("MAVEN_REPO_PASSWORD")
             }
         }
+    }
+}
+
+jib {
+    to {
+        image = "ghcr.io/${System.getenv("GITHUB_REPOSITORY") ?: "roushan65/Continuum"}/${project.name}:${project.version}"
+        auth {
+            username = System.getenv("DOCKER_REPO_USERNAME")
+            password = System.getenv("DOCKER_REPO_PASSWORD")
+        }
+    }
+    from {
+        image = "eclipse-temurin:21-jre"
     }
 }
