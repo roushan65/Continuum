@@ -38,18 +38,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build Gradle module
+      - name: Publish
         run: |
-          ./gradlew :${{ inputs.module-name }}:publish
-          
-          # Check if the Jib task exists for the module before attempting to run it
+          ./gradlew :${{ inputs.module-name }}:publish --no-daemon
+        env:
+          MAVEN_REPO_USERNAME: ${{ github.actor }}
+          MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_REPO_USERNAME: ${{ github.actor }}
+          DOCKER_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Containerize
+        if: always()
+        run: |
           if ./gradlew :${{ inputs.module-name }}:tasks --all | grep -q "jib "; then
-            ./gradlew :${{ inputs.module-name }}:jib
+            ./gradlew :${{ inputs.module-name }}:jib --no-daemon
           else
             echo "Jib task does not exist for module ${{ inputs.module-name }}, skipping."
           fi
         env:
-          MAVEN_REPO_USERNAME: ${{ github.actor }}
-          MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_REPO_USERNAME: ${{ github.actor }}
           DOCKER_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
