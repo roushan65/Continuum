@@ -31,3 +31,15 @@ tasks.named("build") {
 tasks.register<YarnTask>("run") {
     args.set(listOf("run", "start:workbench"))
 }
+
+tasks.register("publish") {
+  // don't publish yet
+}
+
+tasks.register<Exec>("jib") {
+  commandLine("bash", "-c",
+    "docker build -t elilillyco-continuum-docker-lc.jfrog.io/continuum-workbench:$version . --progress=plain && " +
+        "docker login elilillyco-continuum-docker-lc.jfrog.io --username ${System.getenv("MAVEN_REPO_USERNAME")} --password ${System.getenv("MAVEN_REPO_PASSWORD")} && " +
+        "docker push elilillyco-continuum-docker-lc.jfrog.io/continuum-workbench:$version"
+  )
+}
