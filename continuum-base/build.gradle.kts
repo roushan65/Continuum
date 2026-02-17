@@ -3,7 +3,6 @@ plugins {
     kotlin("plugin.spring") version "1.9.25"
     id("io.spring.dependency-management") version "1.1.6"
     `maven-publish`
-    id("com.google.cloud.tools.jib") version "3.4.1"
 }
 
 group = "com.continuum.base"
