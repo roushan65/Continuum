@@ -37,12 +37,12 @@ jobs:
       - name: Build Gradle module
         run: ./gradlew :${{ inputs.module-name }}:build
         env:
-          MAVEN_USERNAME: ${{ secrets.GIHUB_ACTOR }}
-          MAVEN_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_REPO_USERNAME: ${{ github.actor }}
+          MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish Gradle module
         if: success()
         run: ./gradlew :${{ inputs.module-name }}:publish
         env:
-          MAVEN_USERNAME: ${{ secrets.GIHUB_ACTOR }}
-          MAVEN_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_REPO_USERNAME: ${{ github.actor }}
+          MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
