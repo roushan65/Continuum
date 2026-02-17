@@ -44,12 +44,25 @@ jobs:
           MAVEN_REPO_USERNAME: ${{ github.actor }}
           MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: ${{ github.workspace }}/${{ inputs.module-name }}/build
+
   publish:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Ensure build directory exists
+        run: mkdir -p ${{ github.workspace }}/${{ inputs.module-name }}/build
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ${{ github.workspace }}/${{ inputs.module-name }}/build
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -69,6 +82,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Ensure build directory exists
+        run: mkdir -p ${{ github.workspace }}/${{ inputs.module-name }}/build
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: ${{ github.workspace }}/${{ inputs.module-name }}/build
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
