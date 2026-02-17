@@ -39,70 +39,15 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build Gradle module
-        run: ./gradlew :${{ inputs.module-name }}:build
-        env:
-          MAVEN_REPO_USERNAME: ${{ github.actor }}
-          MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: ${{ github.workspace }}/${{ inputs.module-name }}/build
-
-  publish:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Ensure build directory exists
-        run: mkdir -p ${{ github.workspace }}/${{ inputs.module-name }}/build
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ${{ github.workspace }}/${{ inputs.module-name }}/build
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-      - name: Publish Gradle module
-        run: ./gradlew :${{ inputs.module-name }}:publish
-        env:
-          MAVEN_REPO_USERNAME: ${{ github.actor }}
-          MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-
-  jib:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Ensure build directory exists
-        run: mkdir -p ${{ github.workspace }}/${{ inputs.module-name }}/build
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ${{ github.workspace }}/${{ inputs.module-name }}/build
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-      - name: Build and push container image with Jib (if task exists)
         run: |
+          ./gradlew :${{ inputs.module-name }}:publish
+          
+          # Check if the Jib task exists for the module before attempting to run it
           if ./gradlew :${{ inputs.module-name }}:tasks --all | grep -q "jib "; then
             ./gradlew :${{ inputs.module-name }}:jib
           else
             echo "Jib task does not exist for module ${{ inputs.module-name }}, skipping."
           fi
         env:
-          DOCKER_REPO_USERNAME: ${{ github.actor }}
-          DOCKER_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_REPO_USERNAME: ${{ github.actor }}
+          MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
