@@ -7,9 +7,6 @@ on:
         description: 'The Gradle module to build (e.g., continuum-api-server)'
         required: true
         type: string
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 jobs:
   build:
     permissions:
