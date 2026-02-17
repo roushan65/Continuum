@@ -113,16 +113,3 @@ publishing {
         }
     }
 }
-
-jib {
-    to {
-        image = "ghcr.io/${(System.getenv("GITHUB_REPOSITORY") ?: "roushan65/continuum").lowercase()}/${project.name.lowercase()}:${project.version}"
-        auth {
-            username = System.getenv("DOCKER_REPO_USERNAME")
-            password = System.getenv("DOCKER_REPO_PASSWORD")
-        }
-    }
-    from {
-        image = "eclipse-temurin:21-jre"
-    }
-}
