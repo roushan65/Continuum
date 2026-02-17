@@ -46,12 +46,12 @@ jobs:
         if: success()
         run: ./gradlew :${{ inputs.module-name }}:publish
         env:
-          MAVEN_USERNAME: ${{ github.actor }}
-          MAVEN_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_REPO_USERNAME: ${{ github.actor }}
+          MAVEN_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push container image with Jib
         if: success()
         run: ./gradlew :${{ inputs.module-name }}:jib
         env:
-          GITHUB_ACTOR: ${{ github.actor }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_REPO_USERNAME: ${{ github.actor }}
+          DOCKER_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
