@@ -76,8 +76,13 @@ jobs:
           java-version: '21'
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
-      - name: Build and push container image with Jib
-        run: ./gradlew :${{ inputs.module-name }}:jib
+      - name: Build and push container image with Jib (if task exists)
+        run: |
+          if ./gradlew :${{ inputs.module-name }}:tasks --all | grep -q "jib "; then
+            ./gradlew :${{ inputs.module-name }}:jib
+          else
+            echo "Jib task does not exist for module ${{ inputs.module-name }}, skipping."
+          fi
         env:
           DOCKER_REPO_USERNAME: ${{ github.actor }}
           DOCKER_REPO_PASSWORD: ${{ secrets.GITHUB_TOKEN }}

@@ -107,6 +107,7 @@ jib {
             username = System.getenv("DOCKER_REPO_USERNAME")
             password = System.getenv("DOCKER_REPO_PASSWORD")
         }
+
     }
     from {
         image = "eclipse-temurin:21-jre"
