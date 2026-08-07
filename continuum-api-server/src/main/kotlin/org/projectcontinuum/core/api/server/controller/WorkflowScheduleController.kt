@@ -31,6 +31,12 @@ class WorkflowScheduleController(
     @RequestParam(required = false) name: String?
   ): List<WorkflowScheduleResponse> = workflowScheduleService.listSchedules(ownedBy, name)
 
+  @GetMapping("/filter")
+  fun listSchedulesByRsql(
+    @RequestHeader("x-continuum-user-id", required = false, defaultValue = "anonymous") ownedBy: String,
+    @RequestParam(required = false) filter: String?
+  ): List<WorkflowScheduleResponse> = workflowScheduleService.listSchedulesByRsql(ownedBy, filter)
+
   @GetMapping("/{scheduleId}")
   fun getSchedule(
     @RequestHeader("x-continuum-user-id", required = false, defaultValue = "anonymous") ownedBy: String,
