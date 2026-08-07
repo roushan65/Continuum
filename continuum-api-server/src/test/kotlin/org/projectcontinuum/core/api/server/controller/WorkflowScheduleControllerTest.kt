@@ -111,6 +111,21 @@ class WorkflowScheduleControllerTest {
   }
 
   @Test
+  fun `GET schedule list filters by name query param`() {
+    val scheduleId = UUID.randomUUID()
+    whenever(workflowScheduleService.listSchedules("alice", "My Workflow")).thenReturn(listOf(response(scheduleId, "alice")))
+
+    mockMvc.perform(
+      get("/api/v1/workflow/schedule")
+        .header("x-continuum-user-id", "alice")
+        .param("name", "My Workflow")
+    )
+      .andExpect(status().isOk)
+      .andExpect(jsonPath("$.length()").value(1))
+      .andExpect(jsonPath("$[0].scheduleId").value(scheduleId.toString()))
+  }
+
+  @Test
   fun `GET schedule by id returns 200 when found`() {
     val scheduleId = UUID.randomUUID()
     whenever(workflowScheduleService.getSchedule("alice", scheduleId)).thenReturn(response(scheduleId, "alice"))

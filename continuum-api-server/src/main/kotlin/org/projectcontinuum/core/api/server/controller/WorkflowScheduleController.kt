@@ -27,8 +27,9 @@ class WorkflowScheduleController(
 
   @GetMapping
   fun listSchedules(
-    @RequestHeader("x-continuum-user-id", required = false, defaultValue = "anonymous") ownedBy: String
-  ): List<WorkflowScheduleResponse> = workflowScheduleService.listSchedules(ownedBy)
+    @RequestHeader("x-continuum-user-id", required = false, defaultValue = "anonymous") ownedBy: String,
+    @RequestParam(required = false) name: String?
+  ): List<WorkflowScheduleResponse> = workflowScheduleService.listSchedules(ownedBy, name)
 
   @GetMapping("/{scheduleId}")
   fun getSchedule(

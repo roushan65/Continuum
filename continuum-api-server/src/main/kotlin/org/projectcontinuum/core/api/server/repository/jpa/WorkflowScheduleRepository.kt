@@ -8,4 +8,5 @@ import java.util.UUID
 interface WorkflowScheduleRepository :
   JpaRepository<WorkflowScheduleEntity, UUID>, JpaSpecificationExecutor<WorkflowScheduleEntity> {
   fun findByOwnedBy(ownedBy: String): List<WorkflowScheduleEntity>
+  fun findByOwnedByAndName(ownedBy: String, name: String): List<WorkflowScheduleEntity>
 }

@@ -87,10 +87,13 @@ class WorkflowScheduleService(
     return toResponse(entity, scheduleClient.getHandle(scheduleId.toString()).describe())
   }
 
-  fun listSchedules(ownedBy: String): List<WorkflowScheduleResponse> =
-    workflowScheduleRepository.findByOwnedBy(ownedBy).map { entity ->
+  fun listSchedules(ownedBy: String, name: String? = null): List<WorkflowScheduleResponse> {
+    val entities = if (name != null) workflowScheduleRepository.findByOwnedByAndName(ownedBy, name)
+                   else workflowScheduleRepository.findByOwnedBy(ownedBy)
+    return entities.map { entity ->
       toResponse(entity, scheduleClient.getHandle(entity.scheduleId.toString()).describe())
     }
+  }
 
   fun getSchedule(ownedBy: String, scheduleId: UUID): WorkflowScheduleResponse? {
     val entity = findOwnedEntity(ownedBy, scheduleId) ?: return null

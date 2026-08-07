@@ -164,6 +164,27 @@ class WorkflowScheduleServiceTest {
   }
 
   @Test
+  fun `listSchedules filters by name when provided`() {
+    val scheduleId = UUID.randomUUID()
+    val entity = WorkflowScheduleEntity(
+      scheduleId = scheduleId,
+      name = "My Workflow",
+      ownedBy = ownedBy,
+      cronExpression = "0 0 * * *",
+      workflow = workflowModel()
+    )
+    whenever(workflowScheduleRepository.findByOwnedByAndName(ownedBy, "My Workflow")).thenReturn(listOf(entity))
+    val handle = handleReturning(scheduleId)
+    whenever(scheduleClient.getHandle(scheduleId.toString())).thenReturn(handle)
+
+    val result = service.listSchedules(ownedBy, "My Workflow")
+
+    assertEquals(1, result.size)
+    assertEquals("My Workflow", result[0].name)
+    verify(workflowScheduleRepository, never()).findByOwnedBy(any())
+  }
+
+  @Test
   fun `getSchedule returns null when schedule not owned by caller`() {
     val scheduleId = UUID.randomUUID()
     val entity = WorkflowScheduleEntity(
