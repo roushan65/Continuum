@@ -1,10 +1,9 @@
-package org.projectcontinuum.core.api.server.model
+package org.projectcontinuum.core.knime.scheduler.model
 
-import org.projectcontinuum.core.commons.model.ContinuumWorkflowModel
 import java.time.Instant
 import java.util.UUID
 
-data class WorkflowScheduleResponse(
+data class KnimeWorkflowScheduleResponse(
   val scheduleId: UUID,
   val name: String,
   val ownedBy: String,
@@ -14,5 +13,7 @@ data class WorkflowScheduleResponse(
   val nextRunTimes: List<Instant>,
   val createdAt: Instant,
   val updatedAt: Instant,
-  val continuumWorkflowModel: ContinuumWorkflowModel
+  val knimeWorkflowId: UUID,
+  val resetWorkflow: Boolean,
+  val timeoutSeconds: Long
 )
