@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.io.TempDir
+import org.projectcontinuum.core.cluster.manager.config.OverlayProperties
 import org.projectcontinuum.core.cluster.manager.config.WorkbenchProperties
 import org.projectcontinuum.core.cluster.manager.entity.WorkbenchInstanceEntity
 import org.projectcontinuum.core.cluster.manager.exception.WorkbenchNotFoundException
@@ -38,21 +40,24 @@ class WorkbenchServiceTest {
 
   private lateinit var service: WorkbenchService
   private lateinit var workbenchProperties: WorkbenchProperties
+  private lateinit var freemarkerCfg: Configuration
 
   @BeforeEach
   fun setUp() {
     repository.deleteAll()
 
-    val freemarkerConfig = Configuration(Configuration.VERSION_2_3_34)
-    freemarkerConfig.setClassLoaderForTemplateLoading(this::class.java.classLoader, "/templates")
-    freemarkerConfig.defaultEncoding = "UTF-8"
+    freemarkerCfg = Configuration(Configuration.VERSION_2_3_34)
+    freemarkerCfg.setClassLoaderForTemplateLoading(this::class.java.classLoader, "/templates")
+    freemarkerCfg.defaultEncoding = "UTF-8"
 
     workbenchProperties = WorkbenchProperties(
       defaultImage = "projectcontinuum/continuum-workbench:latest",
       namespace = "default"
     )
 
-    service = WorkbenchService(repository, client, freemarkerConfig, transactionTemplate, workbenchProperties)
+    val overlayService = OverlayService(OverlayProperties(enabled = false))
+
+    service = WorkbenchService(repository, client, freemarkerCfg, transactionTemplate, workbenchProperties, overlayService)
   }
 
   private fun createSampleEntity(
@@ -710,5 +715,108 @@ class WorkbenchServiceTest {
     assertEquals("4Gi", resumed.resources.memoryLimit)
     assertEquals("20Gi", resumed.resources.storageSize)
     assertEquals(WorkbenchStatus.RUNNING.name, resumed.status)
+  }
+
+  // ── Overlay integration tests ──────────────────────────────────────────
+
+  @Test
+  fun `createWorkbench with overlay applies overlay annotations to K8s resources`(@TempDir overlayDir: java.nio.file.Path) {
+    // Write overlay that adds annotations
+    java.nio.file.Files.writeString(overlayDir.resolve("deployment.yaml"), """
+      metadata:
+        annotations:
+          cluster.example.com/team: platform
+    """.trimIndent())
+    java.nio.file.Files.writeString(overlayDir.resolve("service.yaml"), """
+      metadata:
+        annotations:
+          cluster.example.com/team: platform
+    """.trimIndent())
+    java.nio.file.Files.writeString(overlayDir.resolve("pvc.yaml"), """
+      metadata:
+        annotations:
+          cluster.example.com/team: platform
+    """.trimIndent())
+
+    val overlayService = OverlayService(OverlayProperties(enabled = true, path = overlayDir.toString()))
+    val overlayEnabledService = WorkbenchService(repository, client, freemarkerCfg, transactionTemplate, workbenchProperties, overlayService)
+
+    val response = overlayEnabledService.createWorkbench("user-overlay-1", WorkbenchCreateRequest(instanceName = "overlay-wb"))
+
+    // Verify the Deployment has the overlay annotation
+    val deployments = client.apps().deployments().inNamespace("default")
+      .withLabel("instance-id", response.instanceId.toString()).list().items
+    assertEquals(1, deployments.size)
+    assertEquals("platform", deployments[0].metadata.annotations?.get("cluster.example.com/team"))
+
+    // Verify the Service has the overlay annotation
+    val services = client.services().inNamespace("default")
+      .withLabel("instance-id", response.instanceId.toString()).list().items
+    assertEquals(1, services.size)
+    assertEquals("platform", services[0].metadata.annotations?.get("cluster.example.com/team"))
+
+    // Verify the PVC has the overlay annotation
+    val pvcs = client.persistentVolumeClaims().inNamespace("default")
+      .withLabel("instance-id", response.instanceId.toString()).list().items
+    assertEquals(1, pvcs.size)
+    assertEquals("platform", pvcs[0].metadata.annotations?.get("cluster.example.com/team"))
+  }
+
+  @Test
+  fun `createWorkbench with overlay adds tolerations to deployment`(@TempDir overlayDir: java.nio.file.Path) {
+    java.nio.file.Files.writeString(overlayDir.resolve("deployment.yaml"), """
+      spec:
+        template:
+          spec:
+            tolerations:
+              - key: "workbench"
+                operator: "Equal"
+                value: "true"
+                effect: "NoSchedule"
+            nodeSelector:
+              workload-type: workbench
+    """.trimIndent())
+
+    val overlayService = OverlayService(OverlayProperties(enabled = true, path = overlayDir.toString()))
+    val overlayEnabledService = WorkbenchService(repository, client, freemarkerCfg, transactionTemplate, workbenchProperties, overlayService)
+
+    val response = overlayEnabledService.createWorkbench("user-overlay-2", WorkbenchCreateRequest(instanceName = "toleration-wb"))
+
+    val deployments = client.apps().deployments().inNamespace("default")
+      .withLabel("instance-id", response.instanceId.toString()).list().items
+    assertEquals(1, deployments.size)
+
+    val podSpec = deployments[0].spec.template.spec
+    assertNotNull(podSpec.tolerations)
+    assertEquals(1, podSpec.tolerations.size)
+    assertEquals("workbench", podSpec.tolerations[0].key)
+    assertEquals("NoSchedule", podSpec.tolerations[0].effect)
+
+    assertNotNull(podSpec.nodeSelector)
+    assertEquals("workbench", podSpec.nodeSelector["workload-type"])
+  }
+
+  @Test
+  fun `resumeWorkbench with overlay applies overlay to recreated resources`(@TempDir overlayDir: java.nio.file.Path) {
+    // Create without overlay first
+    val response = service.createWorkbench("user-overlay-3", WorkbenchCreateRequest(instanceName = "resume-overlay-wb"))
+    service.suspendWorkbench("user-overlay-3", "resume-overlay-wb")
+
+    // Now set up a service with overlay enabled and resume
+    java.nio.file.Files.writeString(overlayDir.resolve("deployment.yaml"), """
+      metadata:
+        annotations:
+          cluster.example.com/resumed: "true"
+    """.trimIndent())
+
+    val overlayService = OverlayService(OverlayProperties(enabled = true, path = overlayDir.toString()))
+    val overlayEnabledService = WorkbenchService(repository, client, freemarkerCfg, transactionTemplate, workbenchProperties, overlayService)
+
+    overlayEnabledService.resumeWorkbench("user-overlay-3", "resume-overlay-wb")
+
+    val deployments = client.apps().deployments().inNamespace("default")
+      .withLabel("instance-id", response.instanceId.toString()).list().items
+    assertEquals(1, deployments.size)
+    assertEquals("true", deployments[0].metadata.annotations?.get("cluster.example.com/resumed"))
   }
 }

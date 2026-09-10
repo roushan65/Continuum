@@ -23,7 +23,8 @@ class WorkbenchService(
   private val kubernetesClient: KubernetesClient,
   private val freemarkerConfig: Configuration,
   private val transactionTemplate: TransactionTemplate,
-  private val workbenchProperties: WorkbenchProperties
+  private val workbenchProperties: WorkbenchProperties,
+  private val overlayService: OverlayService
 ) {
 
   private val logger = LoggerFactory.getLogger(WorkbenchService::class.java)
@@ -102,16 +103,13 @@ class WorkbenchService(
 
     try {
       // First, create all K8s resources
-      val pvcYaml = renderTemplate("pvc.ftl", templateModel)
-      applyYaml(pvcYaml, namespace)
+      renderAndApply("pvc.ftl", templateModel, ResourceType.PVC, namespace)
       k8sResourceIds.add("persistentvolumeclaim/wb-${instanceId}-pvc")
 
-      val deploymentYaml = renderTemplate("deployment.ftl", templateModel)
-      applyYaml(deploymentYaml, namespace)
+      renderAndApply("deployment.ftl", templateModel, ResourceType.DEPLOYMENT, namespace)
       k8sResourceIds.add("deployment/wb-${instanceId}-deployment")
 
-      val serviceYaml = renderTemplate("service.ftl", templateModel)
-      applyYaml(serviceYaml, namespace)
+      renderAndApply("service.ftl", templateModel, ResourceType.SERVICE, namespace)
       k8sResourceIds.add("service/wb-${instanceId}-svc")
 
       // Only save to DB after all K8s resources are successfully created
@@ -342,11 +340,8 @@ class WorkbenchService(
 
     // First, recreate K8s resources
     try {
-      val deploymentYaml = renderTemplate("deployment.ftl", templateModel)
-      applyYaml(deploymentYaml, entity.namespace)
-
-      val serviceYaml = renderTemplate("service.ftl", templateModel)
-      applyYaml(serviceYaml, entity.namespace)
+      renderAndApply("deployment.ftl", templateModel, ResourceType.DEPLOYMENT, entity.namespace)
+      renderAndApply("service.ftl", templateModel, ResourceType.SERVICE, entity.namespace)
     } catch (ex: Exception) {
       logger.error("Failed to resume K8s resources for workbench ${entity.instanceId}, rolling back", ex)
       logAudit(
@@ -427,11 +422,8 @@ class WorkbenchService(
 
     // First, update K8s resources
     try {
-      val deploymentYaml = renderTemplate("deployment.ftl", templateModel)
-      applyYaml(deploymentYaml, updatedEntity.namespace)
-
-      val serviceYaml = renderTemplate("service.ftl", templateModel)
-      applyYaml(serviceYaml, updatedEntity.namespace)
+      renderAndApply("deployment.ftl", templateModel, ResourceType.DEPLOYMENT, updatedEntity.namespace)
+      renderAndApply("service.ftl", templateModel, ResourceType.SERVICE, updatedEntity.namespace)
     } catch (ex: Exception) {
       logger.error("Failed to update K8s resources for workbench ${entity.instanceId}, rolling back", ex)
       logAudit(
@@ -445,10 +437,8 @@ class WorkbenchService(
       // Rollback by reapplying old configuration
       try {
         val oldTemplateModel = buildTemplateModel(entity)
-        val oldDeploymentYaml = renderTemplate("deployment.ftl", oldTemplateModel)
-        applyYaml(oldDeploymentYaml, entity.namespace)
-        val oldServiceYaml = renderTemplate("service.ftl", oldTemplateModel)
-        applyYaml(oldServiceYaml, entity.namespace)
+        renderAndApply("deployment.ftl", oldTemplateModel, ResourceType.DEPLOYMENT, entity.namespace)
+        renderAndApply("service.ftl", oldTemplateModel, ResourceType.SERVICE, entity.namespace)
       } catch (rollbackEx: Exception) {
         logger.error("Failed to rollback K8s resources during update failure", rollbackEx)
       }
@@ -563,6 +553,21 @@ class WorkbenchService(
         .inNamespace(namespace)
         .createOrReplace()
     }
+  }
+
+  /**
+   * Renders a FreeMarker template, applies any configured overlay, and
+   * sends the resulting YAML to Kubernetes.
+   */
+  private fun renderAndApply(
+    templateName: String,
+    model: Map<String, Any?>,
+    resourceType: ResourceType,
+    namespace: String
+  ) {
+    val yaml = renderTemplate(templateName, model)
+    val mergedYaml = overlayService.applyOverlay(yaml, resourceType)
+    applyYaml(mergedYaml, namespace)
   }
 
   private fun buildTemplateModel(entity: WorkbenchInstanceEntity): Map<String, Any?> {
