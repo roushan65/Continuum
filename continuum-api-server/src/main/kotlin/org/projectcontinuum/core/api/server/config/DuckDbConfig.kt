@@ -18,6 +18,16 @@ private fun currentDuckDbPlatform(): String {
   }
 }
 
+private fun currentDuckDbPlatform(): String {
+  val osName = System.getProperty("os.name").lowercase()
+  val arch = if (System.getProperty("os.arch").lowercase().contains("aarch64")) "arm64" else "amd64"
+  return when {
+    osName.contains("win") -> "windows_amd64"
+    osName.contains("mac") -> "osx_$arch"
+    else -> "linux_$arch"
+  }
+}
+
 @Component
 class DuckDbConfig {
 
